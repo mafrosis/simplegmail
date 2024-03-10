@@ -10,9 +10,9 @@ class Label:
     """
     A Gmail label object.
 
-    This class should not typically be constructed directly but rather returned 
+    This class should not typically be constructed directly but rather returned
     from Gmail.list_labels().
-    
+
     Args:
         name: The name of the Label.
         id: The ID of the label.
