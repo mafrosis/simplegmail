@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
 
 from gmsa import label
@@ -105,12 +104,7 @@ class Message:
 
     def trash(self):
         'Moves this message to the trash'
-        try:
-            res = self.service.users().messages().trash(
-                userId=self.user_id, id=self.id,
-            ).execute()
-        except HttpError as error:
-            raise error
+        res = self.service.users().messages().trash(userId=self.user_id, id=self.id).execute()
 
         assert label.TRASH in res['labelIds'], 'An error occurred in a call to `trash`.'
 
@@ -118,12 +112,7 @@ class Message:
 
     def untrash(self):
         'Removes this message from the trash'
-        try:
-            res = self.service.users().messages().untrash(
-                userId=self.user_id, id=self.id,
-            ).execute()
-        except HttpError as error:
-            raise error
+        res = self.service.users().messages().untrash(userId=self.user_id, id=self.id).execute()
 
         assert label.TRASH not in res['labelIds'], 'An error occurred in a call to `untrash`.'
 
@@ -191,14 +180,10 @@ class Message:
         if isinstance(to_remove, (Label, str)):
             to_remove = [to_remove]
 
-        try:
-            res = self.service.users().messages().modify(
-                userId=self.user_id, id=self.id,
-                body=self._create_update_labels(to_add, to_remove)
-            ).execute()
-
-        except HttpError as error:
-            raise error
+        res = self.service.users().messages().modify(
+            userId=self.user_id, id=self.id,
+            body=self._create_update_labels(to_add, to_remove)
+        ).execute()
 
         assert all((lbl in res['labelIds'] for lbl in to_add)) \
             and all((lbl not in res['labelIds'] for lbl in to_remove)), \
