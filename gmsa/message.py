@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 from googleapiclient.errors import HttpError
+from google.oauth2.credentials import Credentials
 
 from gmsa import label
 from gmsa.attachment import Attachment
@@ -35,7 +36,7 @@ class Message:
     def __init__(
         self,
         service: 'googleapiclient.discovery.Resource',
-        creds: 'oauth2client.client.OAuth2Credentials',
+        credentials: Credentials,
         user_id: str,
         msg_id: str,
         thread_id: str,
@@ -52,8 +53,8 @@ class Message:
         cc: Optional[List[str]]=None,
         bcc: Optional[List[str]]=None
     ):
-        self._service = service
-        self.creds = creds
+        self.service = service
+        self.creds = credentials
         self.user_id = user_id
         self.id = msg_id
         self.thread_id = thread_id
@@ -117,7 +118,7 @@ class Message:
     def trash(self):
         'Moves this message to the trash'
         try:
-            res = self._service.users().messages().trash(
+            res = self.service.users().messages().trash(
                 userId=self.user_id, id=self.id,
             ).execute()
         except HttpError as error:
@@ -130,7 +131,7 @@ class Message:
     def untrash(self):
         'Removes this message from the trash'
         try:
-            res = self._service.users().messages().untrash(
+            res = self.service.users().messages().untrash(
                 userId=self.user_id, id=self.id,
             ).execute()
         except HttpError as error:
@@ -201,7 +202,7 @@ class Message:
             to_remove = [to_remove]
 
         try:
-            res = self._service.users().messages().modify(
+            res = self.service.users().messages().modify(
                 userId=self.user_id, id=self.id,
                 body=self._create_update_labels(to_add, to_remove)
             ).execute()
