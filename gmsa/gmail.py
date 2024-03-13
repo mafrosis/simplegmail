@@ -21,10 +21,10 @@ from httplib2 import Http
 from oauth2client import client, file, tools
 from oauth2client.clientsecrets import InvalidClientSecretsError
 
-from simplegmail import label
-from simplegmail.attachment import Attachment
-from simplegmail.label import Label
-from simplegmail.message import Message
+from gmsa import label
+from gmsa.attachment import Attachment
+from gmsa.label import Label
+from gmsa.message import Message
 
 
 class Gmail:
