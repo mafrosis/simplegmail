@@ -1,4 +1,5 @@
 import base64
+import datetime
 from email.mime.audio import MIMEAudio
 from email.mime.application import MIMEApplication
 from email.mime.base import MIMEBase
@@ -14,8 +15,6 @@ import threading
 from typing import List, Optional
 
 from bs4 import BeautifulSoup
-from dateutil import parser
-from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
 
 from gmsa.authentication import AuthenticatedService
@@ -93,12 +92,9 @@ class Gmail(AuthenticatedService):
             sender, to, subject, msg_html, msg_plain, cc=cc, bcc=bcc,
             attachments=attachments, signature=signature, user_id=user_id
         )
+        res = self.service.users().messages().send(userId='me', body=msg).execute()
+        return self._build_message_from_ref(user_id, res, 'reference')
 
-        try:
-            res = self.service.users().messages().send(userId='me', body=msg).execute()
-            return self._build_message_from_ref(user_id, res, 'reference')
-        except HttpError as error:
-            raise error
 
     def get_messages(self, user_id: str='me', labels: Optional[List[Label]]=None, query: str='',
                      attachments: str='reference', include_spam_trash: bool=False) -> List[Message]:
@@ -122,34 +118,30 @@ class Gmail(AuthenticatedService):
 
         labels_ids = [lbl.id if isinstance(lbl, Label) else lbl for lbl in labels]
 
-        try:
+        response = self.service.users().messages().list(
+            userId=user_id,
+            q=query,
+            labelIds=labels_ids,
+            includeSpamTrash=include_spam_trash
+        ).execute()
+
+        message_refs = []
+        if 'messages' in response:  # ensure request was successful
+            message_refs.extend(response['messages'])
+
+        while 'nextPageToken' in response:
+            page_token = response['nextPageToken']
             response = self.service.users().messages().list(
                 userId=user_id,
                 q=query,
                 labelIds=labels_ids,
-                includeSpamTrash=include_spam_trash
+                includeSpamTrash=include_spam_trash,
+                pageToken=page_token
             ).execute()
 
-            message_refs = []
-            if 'messages' in response:  # ensure request was successful
-                message_refs.extend(response['messages'])
+            message_refs.extend(response['messages'])
 
-            while 'nextPageToken' in response:
-                page_token = response['nextPageToken']
-                response = self.service.users().messages().list(
-                    userId=user_id,
-                    q=query,
-                    labelIds=labels_ids,
-                    includeSpamTrash=include_spam_trash,
-                    pageToken=page_token
-                ).execute()
-
-                message_refs.extend(response['messages'])
-
-            return self._get_messages_from_refs(user_id, message_refs, attachments)
-
-        except HttpError as error:
-            raise error
+        return self._get_messages_from_refs(user_id, message_refs, attachments)
 
 
     def list_labels(self, user_id: str='me') -> List[Label]:
@@ -165,11 +157,7 @@ class Gmail(AuthenticatedService):
         Returns:
             The list of Label objects.
         '''
-
-        try:
-            res = self.service.users().labels().list(userId=user_id).execute()
-        except HttpError as error:
-            raise error
+        res = self.service.users().labels().list(userId=user_id).execute()
 
         labels = [Label(name=x['name'], id=x['id']) for x in res['labels']]
         return labels
@@ -184,15 +172,7 @@ class Gmail(AuthenticatedService):
         Returns:
             The created Label object.
         '''
-        try:
-            res = self.service.users().labels().create(
-                userId=user_id,
-                body={'name': name}
-            ).execute()
-
-        except HttpError as error:
-            raise error
-
+        res = self.service.users().labels().create(userId=user_id, body={'name': name}).execute()
         return Label(res['name'], res['id'])
 
     def delete_label(self, label_: Label, user_id: str = 'me'):
@@ -203,14 +183,7 @@ class Gmail(AuthenticatedService):
             label: The label to delete.
             user_id: The user's email address. By default, the authenticated user.
         '''
-        try:
-            self.service.users().labels().delete(
-                userId=user_id,
-                id=label_.id
-            ).execute()
-
-        except HttpError as error:
-            raise error
+        self.service.users().labels().delete(userId=user_id, id=label_.id).execute()
 
 
     def _get_messages_from_refs(self, user_id: str, message_refs: List[dict],
@@ -284,11 +257,8 @@ class Gmail(AuthenticatedService):
         Returns:
             The Message object.
         '''
-        try:
-            # Get message JSON
-            message = self.service.users().messages().get(userId=user_id, id=message_ref['id']).execute()
-        except HttpError as error:
-            raise error
+        # Get message JSON
+        message = self.service.users().messages().get(userId=user_id, id=message_ref['id']).execute()
 
         msg_id = message['id']
         thread_id = message['threadId']
@@ -312,7 +282,9 @@ class Gmail(AuthenticatedService):
         for hdr in headers:
             if hdr['name'].lower() == 'date':
                 try:
-                    date = str(parser.parse(hdr['value']).astimezone())
+                    date = str(datetime.datetime.strptime(
+                        hdr['value'], '%d %b %Y %H:%M:%S %z'
+                    ).astimezone())
                 except ValueError:
                     date = hdr['value']
             elif hdr['name'].lower() == 'from':
