@@ -1,0 +1,6 @@
+pylint
+pytest
+pytest-mypy
+pytest-sugar
+ipdb
+types-click
