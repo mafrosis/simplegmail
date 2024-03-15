@@ -1,7 +1,7 @@
 import pickle
 import os.path
 import glob
-from typing import List
+from typing import List, Optional
 
 from googleapiclient import discovery
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -25,8 +25,8 @@ class AuthenticatedService:
             self,
             *,
             credentials: Credentials=None,
-            credentials_path: str=None,
-            token_path: str=None,
+            credentials_path: Optional[str]=None,
+            token_path: Optional[str]=None,
             save_token: bool=True,
             read_only: bool=False,
             authentication_flow_host: str='localhost',

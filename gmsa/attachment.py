@@ -2,12 +2,14 @@ import base64
 import os
 from typing import Optional
 
+from googleapiclient import discovery
+
 
 class Attachment:
     '''
     The Attachment class for attachments to emails in your Gmail mailbox.
     '''
-    def __init__(self, service: 'googleapiclient.discovery.Resource', user_id: str, msg_id: str,
+    def __init__(self, service: discovery.Resource, user_id: str, msg_id: str,
                  att_id: str, filename: str, filetype: str, data: Optional[bytes]=None):
         '''
         Args:
