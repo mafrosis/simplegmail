@@ -27,9 +27,10 @@ class Gmail(AuthenticatedService):
     '''
     The Gmail class which serves as the entrypoint for the Gmail service API.
     '''
-    def __init__(self, credentials: Credentials=None, credentials_path: str=None, token_path: str=None,
-                 save_token: bool=True, read_only: bool=False, authentication_flow_host: str='localhost',
-                 authentication_flow_port: int=8080, authentication_flow_bind_addr: str=None):
+    def __init__(self, credentials: Optional[Credentials]=None, credentials_path: Optional[str]=None,
+                 token_path: Optional[str]=None, save_token: bool=True, read_only: bool=False,
+                 authentication_flow_host: str='localhost', authentication_flow_port: int=8080,
+                 authentication_flow_bind_addr: str=None):
         '''
         Specify ``credentials`` to use in requests or ``credentials_path`` and ``token_path`` to get credentials from
 
@@ -410,9 +411,10 @@ class Gmail(AuthenticatedService):
         return []
 
     def _create_message(
-        self, sender: str, to: str, subject: str='', msg_html: str=None, msg_plain: str=None,
-        cc: List[str]=None, bcc: List[str]=None, attachments: List[str]=None,signature: bool=False,
-        user_id: str='me'
+        self, sender: str, to: str, subject: str='', msg_html: Optional[str]=None,
+        msg_plain: Optional[str]=None, cc: Optional[List[str]]=None,
+        bcc: Optional[List[str]]=None, attachments: Optional[List[str]]=None,
+        signature: bool=False, user_id: str='me'
     ) -> dict:
         '''
         Creates the raw email message to be sent.

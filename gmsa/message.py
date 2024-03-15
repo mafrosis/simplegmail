@@ -1,5 +1,6 @@
 from typing import List, Optional, Union
 
+from googleapiclient import discovery
 from google.oauth2.credentials import Credentials
 
 from gmsa import label
@@ -33,7 +34,7 @@ class Message:
         bcc: who the message was bcc'd on the message.
     '''
     def __init__(
-        self, service: 'googleapiclient.discovery.Resource',
+        self, service: discovery.Resource,
         credentials: Credentials, user_id: str, msg_id: str, thread_id: str,
         recipient: str, sender: str, subject: str, date: str, snippet: str, plain: Optional[str]=None,
         html: Optional[str]=None, label_ids: Optional[List[str]]=None,
