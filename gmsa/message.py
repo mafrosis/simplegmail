@@ -1,5 +1,6 @@
 from typing import List, Optional, Union
 
+from googleapiclient import discovery
 from google.oauth2.credentials import Credentials
 
 from gmsa import label
@@ -34,7 +35,7 @@ class Message:
     '''
     def __init__(
         self,
-        service: 'googleapiclient.discovery.Resource',
+        service: discovery.Resource,
         credentials: Credentials,
         user_id: str,
         msg_id: str,
