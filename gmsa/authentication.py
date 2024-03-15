@@ -1,7 +1,7 @@
 import pickle
 import os.path
 import glob
-from typing import List
+from typing import List, Optional
 
 from googleapiclient import discovery
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -24,14 +24,14 @@ class AuthenticatedService:
     def __init__(
             self,
             *,
-            credentials: Credentials = None,
-            credentials_path: str = None,
-            token_path: str = None,
-            save_token: bool = True,
-            read_only: bool = False,
-            authentication_flow_host: str = 'localhost',
-            authentication_flow_port: int = 8080,
-            authentication_flow_bind_addr: str = None
+            credentials: Credentials=None,
+            credentials_path: Optional[str]=None,
+            token_path: Optional[str]=None,
+            save_token: bool=True,
+            read_only: bool=False,
+            authentication_flow_host: str='localhost',
+            authentication_flow_port: int=8080,
+            authentication_flow_bind_addr: str=None
     ):
         """
         Specify ``credentials`` to use in requests or ``credentials_path`` and ``token_path`` to get credentials from.
@@ -147,8 +147,8 @@ class AuthenticatedService:
                 raise ValueError(f"Multiple credential files found in {credential_dir}.\n"
                                  f"Try specifying the credentials file, e.x.:\n"
                                  f"GoogleCalendar(credentials_path='{credentials_files[0]}')")
-            elif not credentials_files:
+            if not credentials_files:
                 raise FileNotFoundError(f'Credentials file (credentials.json or client_secret*.json)'
                                         f'not found in the default path: "{credential_dir}".')
-            else:
-                return credentials_files[0]
+
+            return credentials_files[0]
