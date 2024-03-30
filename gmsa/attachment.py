@@ -5,6 +5,9 @@ from typing import Optional
 from googleapiclient import discovery
 
 
+from gmsa.exceptions import AttachmentSaveError
+
+
 class Attachment:
     '''
     The Attachment class for attachments to emails in your Gmail mailbox.
@@ -66,5 +69,8 @@ class Attachment:
                 'you would like to overwrite the file.'
             )
 
-        with open(filepath, 'wb') as f:
-            f.write(self.data)
+        try:
+            with open(filepath, 'wb') as f:
+                f.write(self.data)
+        except (FileNotFoundError, PermissionError, OSError, IOError) as e:
+            raise AttachmentSaveError(str(e)) from e
