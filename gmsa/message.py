@@ -181,9 +181,19 @@ class Message:
         if isinstance(to_remove, (Label, str)):
             to_remove = [to_remove]
 
+        def create_update_labels() -> dict:
+            'Creates an object for updating message label.'
+            return {
+                'addLabelIds': [
+                    lbl.id if isinstance(lbl, Label) else lbl for lbl in to_add
+                ],
+                'removeLabelIds': [
+                    lbl.id if isinstance(lbl, Label) else lbl for lbl in to_remove
+                ]
+            }
+
         res = self.service.users().messages().modify(
-            userId=self.user_id, id=self.id,
-            body=self._create_update_labels(to_add, to_remove)
+            userId=self.user_id, id=self.id, body=create_update_labels()
         ).execute()
 
         assert all((lbl in res['labelIds'] for lbl in to_add)) \
@@ -191,31 +201,3 @@ class Message:
             'An error occurred while modifying message label.'
 
         self.label_ids = res['labelIds']
-
-    def _create_update_labels(
-        self, to_add: Union[List[Label], List[str]]=None,
-        to_remove: Union[List[Label], List[str]]=None
-    ) -> dict:
-        '''
-        Creates an object for updating message label.
-
-        Args:
-            to_add: A list of labels to add.
-            to_remove: A list of labels to remove.
-        Returns:
-            The modify labels object to pass to the Gmail API.
-        '''
-        if to_add is None:
-            to_add = []
-
-        if to_remove is None:
-            to_remove = []
-
-        return {
-            'addLabelIds': [
-                lbl.id if isinstance(lbl, Label) else lbl for lbl in to_add
-            ],
-            'removeLabelIds': [
-                lbl.id if isinstance(lbl, Label) else lbl for lbl in to_remove
-            ]
-        }
