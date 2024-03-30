@@ -33,20 +33,6 @@ class Attachment:
         self.data = data
 
 
-    def download(self):
-        '''
-        Downloads the data for an attachment if it does not exist.
-        '''
-        if self.data is not None:
-            return
-
-        res = self.service.users().messages().attachments().get(
-            userId=self.user_id, messageId=self.msg_id, id=self.id
-        ).execute()
-
-        data = res['data']
-        self.data = base64.urlsafe_b64decode(data)
-
     def save(self, filepath: Optional[str]=None, overwrite: bool=False):
         '''
         Saves the attachment. Downloads file data if not downloaded.
@@ -55,17 +41,25 @@ class Attachment:
             filepath: where to save the attachment. Default uses the filename stored.
             overwrite: whether to overwrite existing files. Default False.
         '''
+        # Use filename from MIME if not specified
         if filepath is None:
             filepath = self.filename
-
-        if self.data is None:
-            self.download()
 
         if not overwrite and os.path.exists(filepath):
             raise FileExistsError(
                 f'Cannot overwrite file "{filepath}". Use overwrite=True if '
                 'you would like to overwrite the file.'
             )
+
+        def download() -> bytes:
+            res = self.service.users().messages().attachments().get(
+                userId=self.user_id, messageId=self.msg_id, id=self.id
+            ).execute()
+
+            return base64.urlsafe_b64decode(res['data'])
+
+        if not self.data:
+            self.data = download()
 
         try:
             with open(filepath, 'wb') as f:
