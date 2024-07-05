@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "gmsa"
@@ -25,15 +25,38 @@ dependencies = [
 [project.scripts]
 gmsa = "gmsa.cli:cli"
 
-[tool.setuptools.packages.find]
+##### Hatch
+
+[tool.hatch.version]
+path = "gmsa/__init__.py"
+
+[tool.hatch.build.targets.sdist]
 exclude = ["test*", "venv*"]
 
-[tool.setuptools.package-data]
-gmsa = ["*.txt", "*.md"]
+[tool.hatch.metadata]
+allow-direct-references = true
 
-[tool.setuptools.dynamic]
-version = {attr = "gmsa.__version__"}
-readme = {file = ["README.md"]}
 
-[tool.distutils.bdist_wheel]
-universal = true
+[tool.hatch.envs.default]
+dependencies = ["ipdb"]
+
+[tool.hatch.envs.test]
+dependencies = [
+	"pytest",
+	"pytest-sugar",
+	"pytest-mypy",
+	"types-click",
+]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest --disable-pytest-warnings test"
+mypy = "pytest --mypy gmsa"
+
+[tool.hatch.envs.lint]
+detached = true  # do not install package
+dependencies = [
+	"pylint",
+]
+
+[tool.hatch.envs.lint.scripts]
+lint = "pylint gmsa"

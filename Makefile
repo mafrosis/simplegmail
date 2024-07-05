@@ -1,16 +1,15 @@
 .PHONY: lint
 lint:
-	docker compose run --rm --entrypoint=pylint test /src/gmsa
+	hatch fmt --preview
 
 .PHONY: typecheck
 typecheck:
-	docker compose run --rm test --mypy /src/gmsa
+	hatch run test:mypy
 
 .PHONY: test
 test:
-	docker compose run --rm test --disable-pytest-warnings /src/test
+	hatch run test:test
 
 .PHONY: dist
 dist:
-	pip install wheel build
-	python -m build
+	hatch build
