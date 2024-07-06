@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 from googleapiclient.errors import HttpError
+from google.oauth2.credentials import Credentials
 
 from gmsa import label
 from gmsa.attachment import Attachment
@@ -35,7 +36,7 @@ class Message:
     def __init__(
         self,
         service: 'googleapiclient.discovery.Resource',
-        creds: 'oauth2client.client.OAuth2Credentials',
+        credentials: Credentials,
         user_id: str,
         msg_id: str,
         thread_id: str,
@@ -53,7 +54,7 @@ class Message:
         bcc: Optional[List[str]]=None
     ):
         self.service = service
-        self.creds = creds
+        self.credentials = credentials
         self.user_id = user_id
         self.id = msg_id
         self.thread_id = thread_id

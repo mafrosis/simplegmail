@@ -6,13 +6,19 @@ from typing import List
 from googleapiclient import discovery
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from google.auth.credentials import Credentials
+from google.oauth2.credentials import Credentials
 
 
 class AuthenticatedService:
     """Handles authentication of the `GoogleCalendar`"""
 
-    _READ_WRITE_SCOPES = 'https://www.googleapis.com/auth/calendar'
+    _READ_WRITE_SCOPES = [
+        'https://www.googleapis.com/auth/gmail.modify',
+        'https://www.googleapis.com/auth/gmail.settings.basic',
+    ]
+    _READONLY_SCOPES = [
+        'https://www.googleapis.com/auth/gmail.readonly',
+    ]
     _LIST_ORDERS = ("startTime", "updated")
 
     def __init__(
@@ -61,7 +67,11 @@ class AuthenticatedService:
             credentials_path = credentials_path or self._get_default_credentials_path()
             credentials_dir, credentials_file = os.path.split(credentials_path)
             token_path = token_path or os.path.join(credentials_dir, 'token.pickle')
-            scopes = [self._READ_WRITE_SCOPES + ('.readonly' if read_only else '')]
+
+            if read_only:
+                scopes = self._READONLY_SCOPES
+            else:
+                scopes = self._READ_WRITE_SCOPES
 
             self.credentials = self._get_credentials(
                 token_path,
@@ -74,7 +84,7 @@ class AuthenticatedService:
                 authentication_flow_bind_addr
             )
 
-        self.service = discovery.build('calendar', 'v3', credentials=self.credentials)
+        self.service = discovery.build('gmail', 'v1', credentials=self.credentials)
 
     @staticmethod
     def _ensure_refreshed(
