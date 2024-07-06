@@ -21,7 +21,7 @@ class Attachment:
             filetype: The mime type of the file.
             data: The raw data of the file. Default None.
         '''
-        self._service = service
+        self.service = service
         self.user_id = user_id
         self.msg_id = msg_id
         self.id = att_id
@@ -37,7 +37,7 @@ class Attachment:
         if self.data is not None:
             return
 
-        res = self._service.users().messages().attachments().get(
+        res = self.service.users().messages().attachments().get(
             userId=self.user_id, messageId=self.msg_id, id=self.id
         ).execute()
 
