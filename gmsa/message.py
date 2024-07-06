@@ -52,7 +52,7 @@ class Message:
         cc: Optional[List[str]]=None,
         bcc: Optional[List[str]]=None
     ):
-        self._service = service
+        self.service = service
         self.creds = creds
         self.user_id = user_id
         self.id = msg_id
@@ -117,7 +117,7 @@ class Message:
     def trash(self):
         'Moves this message to the trash'
         try:
-            res = self._service.users().messages().trash(
+            res = self.service.users().messages().trash(
                 userId=self.user_id, id=self.id,
             ).execute()
         except HttpError as error:
@@ -130,7 +130,7 @@ class Message:
     def untrash(self):
         'Removes this message from the trash'
         try:
-            res = self._service.users().messages().untrash(
+            res = self.service.users().messages().untrash(
                 userId=self.user_id, id=self.id,
             ).execute()
         except HttpError as error:
@@ -201,7 +201,7 @@ class Message:
             to_remove = [to_remove]
 
         try:
-            res = self._service.users().messages().modify(
+            res = self.service.users().messages().modify(
                 userId=self.user_id, id=self.id,
                 body=self._create_update_labels(to_add, to_remove)
             ).execute()
