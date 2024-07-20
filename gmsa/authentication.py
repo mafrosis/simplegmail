@@ -6,7 +6,7 @@ from typing import List, Optional
 import webbrowser
 
 from googleapiclient import discovery
-from google_auth_oauthlib.flow import InstalledAppFlow, WSGITimeout
+from google_auth_oauthlib.flow import InstalledAppFlow#, WSGITimeout
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
@@ -136,9 +136,9 @@ class AuthenticatedService:
                         token_path, credentials_dir, credentials_file, scopes, save_token, host, port,
                         bind_addr, open_browser=False
                     )
-                except WSGITimeout:
-                    logger.debug('Authentication flow timed out. Please try again.')
-                    print('Authentication flow timed out. Please try again.')
+                #except WSGITimeout:
+                #    logger.debug('Authentication flow timed out. Please try again.')
+                #    print('Authentication flow timed out. Please try again.')
 
             if credentials is None:
                 raise FailedToAuthenticateError
